@@ -58,12 +58,14 @@ class NetflixAnalysis:
         ax.set_title("Top 10 Popular Genres")
 
     def table_top_reviewed(self, ax):
-        review_sort = self.netflix_df.sort_values('rating', ascending=False)[["title", "rating"]]
+        # print(self.netflix_df.sort_values('rating', ascending=False)[["title", "rating"]])
+        review_sort = self.netflix_df.sort_values('rating', ascending=False)[["title", "rating"]].head(100)
         data_list = [review_sort.columns.tolist()] + review_sort.values.tolist()
-        #print(review_sort)
+        # print(data_list)
+        plt.table(cellText=data_list, cellLoc="center")
+        # for rating in self.netflix_df["rating"]:
         
-        plt.table(cellText=data_list, loc='center')
-        plt.axis('off')
+        # print(review_sort)
 
     def _update_dictionary(self, dictionary, genre):
         if genre in dictionary: #jezeli gatunek jest juz zapisany w slowniczku dodajemy licznik +1, w przeciwnym przypadku zapisujemy w slowniku i ustawiamy licznik na 1
