@@ -1,10 +1,21 @@
+# from dash import Dash, html, dcc, Input, Output
+
 import os
 import matplotlib.pyplot as plt
+# import matplotlib
+# matplotlib.use('agg')
 import pandas as pd
 import seaborn as sns
 
+# import plotly.express as px
+# import dash_ag_grid as dag
+# import dash_bootstrap_components as dbc
+# import base64
+# from io import BytesIO
+
 
 from src.utils.utils import PROJECT_DIR
+
 
 class NetflixAnalysis:
     #Analiza Netflix dataset
