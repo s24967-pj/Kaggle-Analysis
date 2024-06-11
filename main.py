@@ -5,8 +5,9 @@ import seaborn as sns
 import dash
 import plotly.express as px
 import plotly.graph_objs as go
+import dash_bootstrap_components as dbc
 
-from dash import dcc, html
+from dash import dcc, html, dash_table
 from dash.dependencies import Input, Output
 from src.utils.utils import PROJECT_DIR
 
@@ -20,18 +21,25 @@ class NetflixAnalysis:
     
     def setup_layout(self):
         #uklad apki
-        self.app.layout = html.Div([
+        # self.app.layout = html.Div([
+        #     html.H1("Netflix Data Visualisation",), 
+        #     dcc.Graph(id='top-reviewed-movies'),
+        #     dcc.Graph(id='top-genres-movies'),
+        #     html.Div(id='top-reviewed-table')
+        # ])
+        self.app.layout = dbc.Container(
+            html.Div([
             html.H1("Netflix Data Visualisation",), 
             dcc.Graph(id='top-reviewed-movies'),
             dcc.Graph(id='top-genres-movies'),
-            html.Div(id='top-reviewed-table')
-        ])
+            self.table_top_reviewed()])
+        )
 
     def setup_callbacks(self):
         @self.app.callback(
             Output('top-reviewed-movies', 'figure'),
             Output('top-genres-movies', 'figure'),
-            Output('top-reviewed-table', 'children'),
+            #Output('top-reviewed-table', 'child'),
             Input('top-reviewed-movies', 'id')
         )
 
@@ -98,16 +106,21 @@ class NetflixAnalysis:
 
         # # for rating in self.netflix_df["rating"]:
         
+        
         # # print(review_sort)
         review_sort = self.netflix_df.drop_duplicates('title', keep='first').sort_values('rating', ascending=False)[["title", "rating"]].head(50)
-        table = html.Table([
-            html.Thead(html.Tr([html.Th(col) for col in review_sort.columns])),  # Nagłówki tabeli
-            html.Tbody([
-                html.Tr([
-                    html.Td(review_sort.iloc[i][col]) for col in review_sort.columns
-                ]) for i in range(len(review_sort))
-            ])
-        ])
+        # table = html.Table([
+        #     html.Thead(html.Tr([html.Th(col) for col in review_sort.columns])),  # Nagłówki tabeli
+        #     html.Tbody([
+        #         html.Tr([
+        #             html.Td(review_sort.iloc[i][col]) for col in review_sort.columns
+        #         ]) for i in range(len(review_sort))
+        #     ])
+        # ])
+        table = dash_table.DataTable(
+            data=review_sort,
+            columns=[{'id':col, 'name':col} for col in review_sort.columns]
+        )
         return table
 
     def _update_dictionary(self, dictionary, genre):
