@@ -1,4 +1,4 @@
-from dash import Dash, html, dcc, Input, Output
+from dash import Dash, html, dcc, Input, Output, callback
 
 import os
 import matplotlib.pyplot as plt
@@ -23,6 +23,7 @@ class NetflixAnalysis:
         self.netflix_df = self._load_data()
         self.app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
         self.setup_layout()
+        self.setup_callbacks()
     
     def setup_layout(self):
 
@@ -34,24 +35,26 @@ class NetflixAnalysis:
         #     ]), 
         #     self.table_top_reviewed()],   
         # )
+        # add some padding.
+        
 
         self.app.layout = dbc.Container([
                 dbc.Row(
                         dbc.Col(
-                            [html.H1("Netflix Data Visualisation", style={'fontSize': 60, 'textAlign': 'center', 'color': '#800080'})],
+                            [html.H1("Netflix Data Visualisation", style={'fontSize': 60, 'textAlign': 'center', 'color': '#800080', 'padding-bottom': '5rem'},)],
                             width={'size': 6, 'offset': 3},
                         ),
                 ),
                 dbc.Row(
-                    # [
+                    [
                         dbc.Col(
                             dcc.Graph(id='top-reviewed-movies', figure=self.plot_top_reviewed_movies())
+                        ),
+                        dbc.Col(
+                            [self.table_top_reviewed()],
+                            width={'size': 4, 'order': 2},
                         )
-                    #     dbc.Col(
-                    #         [self.table_top_reviewed()],
-                    #         width={'size': 5, 'order': 2, 'offset': 1},
-                    #     )
-                    # ]
+                    ]
                 ),
                 dbc.Row(
                         dbc.Col(
@@ -60,17 +63,56 @@ class NetflixAnalysis:
                 ),
                 dbc.Row(
                     [
-                        dbc.Col(
-                            [self.table_top_reviewed()],
-                            width={'size': 6, 'offset': 3},
-                        )
+                        dbc.Col([
+                            dcc.Input(id='input1', type='text', debounce=True, value=""),
+                            html.Div(id='output')
+                        ])
+                        # [
+                        #     html.P('Enter actor name'),
+                        #     dcc.Input(id='num', type='text', debounce=True),
+                        #     html.P(id='err', style={'color': 'red'}),
+                        #     html.P(id='out')
+                        # ]
+                        #     )
+                        # )
                     ]
                 )
         ])
-       
 
     def setup_callbacks(self):
-        return
+
+        @callback(
+            Output("output", "children"),
+            Input("input1", "value"),
+        )  
+        def update_output(input1):
+            data = self.netflix_df.drop_duplicates('title', keep='first')[["title", "stars"]]
+            data2 = data[data['stars'].str.contains(input1)]
+            print(data2)
+            return f'Films: {data2['title'].values}'
+    # @callback(
+    #     Output('out', 'children'),
+    #     Output('err', 'children'),
+    #     Input('num', 'value')
+    # )  
+    # def update_output(self):
+    #     # return f'Actor: {input1}'
+    #     # return self.searching_actor(input1)
+    #     if self.netflix_df["stars"] is None:
+    #         return '', ''
+
+    #     if input in self.netflix_df["stars"].values:
+    #         return f"Actor found: {input}", ''
+    #     else:
+    #         return "Actor not found", ''
+        
+
+
+    # def searching_actor(self):
+    #     if self.update_output.input1 in self.netflix_df["stars"].values:
+    #         return f"Actor found: {self.update_output.input1}"
+    #     else:
+    #         return "Actor not found"
        
         
 
@@ -156,6 +198,7 @@ class NetflixAnalysis:
         #     ],     
         # ) #zapisanie posortowanych danych do tabeli
         return table
+
 
     def _update_dictionary(self, dictionary, genre):
         if genre in dictionary: #jezeli gatunek jest juz zapisany w slowniczku dodajemy licznik +1, w przeciwnym przypadku zapisujemy w slowniku i ustawiamy licznik na 1
