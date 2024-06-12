@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 import dash
+import dash_ag_grid as dag
 import plotly.express as px
 import plotly.graph_objs as go
 import dash_bootstrap_components as dbc
@@ -61,7 +62,7 @@ class NetflixAnalysis:
                     [
                         dbc.Col(
                             [self.table_top_reviewed()],
-                            width={'size': 6, 'offset': 3}
+                            width={'size': 6, 'offset': 3},
                         )
                     ]
                 )
@@ -105,33 +106,55 @@ class NetflixAnalysis:
 
     def table_top_reviewed(self):
        
-        review_sort = self.netflix_df.drop_duplicates('title', keep='first').sort_values('rating', ascending=False)[["title", "rating"]].head(50) #sortowanie 50 danych z ratings
+        #review_sort = self.netflix_df.drop_duplicates('title', keep='first').sort_values('rating', ascending=False)[["title", "rating"]] #sortowanie danych z ratings
       
+        review_sort = self.netflix_df.drop_duplicates('title', keep='first')[["title", "rating"]]
+        columnDefs = [
+            {'field': 'title', 'sortable': False},
+            {'field': 'rating'}
+            # {"name": "Rating", "id": "rating", "type": "numeric"}
+        ]
         
-        table = dash_table.DataTable(review_sort.to_dict('records'),
-            # {"field": "rating", "sort": "desc"},
-            style_header={
-                'backgroundColor': 'pink',
-                'fontWeight': 'bold'
-            },
-            style_data={
-                'whiteSpace': 'auto',
-                'height': 'auto'
-            },
-            style_table={
-                'height': '300px', 
-                'overflowY': 'auto'
-            },
-            style_cell={
-                'textAlign': 'left'
-            },
-            style_cell_conditional=[
-                {'if': {'column_id': 'title'},
-                 'width': 'auto'},
-                {'if': {'column_id': 'rating'},
-                  'width': '90px'}
-            ],      
-        ) #zapisanie posortowanych danych do tabeli
+        table = html.Div(
+            [
+                dag.AgGrid(
+                    id="row-sorting-simple",
+                    rowData=review_sort.to_dict("records"),
+                    columnDefs=columnDefs,
+                    defaultColDef={"filter": True},
+                    columnSize="sizeToFit",
+                    dashGridOptions={"animateRows": False}
+                ),
+            ],
+        )
+        #table = dash_table.DataTable(review_sort.to_dict('records'),
+        # table = dash_table.DataTable(
+        #     review_sort.to_dict('records'),
+        #     columnDefs=columnDefs,
+        #     defaultColDef={"filter": True},
+        #     # sort_action="native", #umozliwia sortowanie
+        #     style_header={
+        #         'backgroundColor': 'pink',
+        #         'fontWeight': 'bold'
+        #     },
+        #     style_data={
+        #         'whiteSpace': 'auto',
+        #         'height': 'auto'
+        #     },
+        #     style_table={
+        #         'height': '300px', 
+        #         'overflowY': 'auto'
+        #     },
+        #     style_cell={
+        #         'textAlign': 'left'
+        #     },
+        #     style_cell_conditional=[
+        #         {'if': {'column_id': 'title'},
+        #          'width': 'auto'},
+        #         {'if': {'column_id': 'rating'},
+        #           'width': '90px'}
+        #     ],     
+        # ) #zapisanie posortowanych danych do tabeli
         return table
 
     def _update_dictionary(self, dictionary, genre):
