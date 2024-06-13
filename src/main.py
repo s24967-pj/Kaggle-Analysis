@@ -3,8 +3,6 @@ import os
 import dash
 import dash_ag_grid as dag
 import dash_bootstrap_components as dbc
-# import matplotlib
-# matplotlib.use('agg')
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objs as go
@@ -105,21 +103,21 @@ class NetflixAnalysis:
 
     def plot_top_genres_movies(self):
         """"Funkcja zwracajaca wykres najczesciej wystepujacych gatunkow filmow."""
-        dictionary = {}  # stworzenie slownika
+        dictionary = {}  # Stworzenie slownika
 
-        for genre in self.netflix_df["genre"]:  # przzechodzimy przez cala koumne genre
-            if type(genre) is not str:  # rozwiaznie problemu zle wprowadzonych danych w jednym z filmow
+        for genre in self.netflix_df["genre"]:  # Przechodzimy przez cala koumne genre
+            if type(genre) is not str:  # Rozwiaznie problemu zle wprowadzonych danych w jednym z filmow
                 continue
-            if ',' not in genre:  # jezeli w 'genre' nie ma kilku gatunkow przypisanych do jednego filmu
+            if ',' not in genre:  # Jeżeli w 'genre' nie ma kilku gatunkow przypisanych do jednego filmu
                 self._update_dictionary(dictionary, genre)
-            else:  # jezeli mamy przypisane wiecej niz jeden gatunek do filmu
+            else:  # Jeżeli mamy przypisane wiecej niz jeden gatunek do filmu
                 for element in genre.split(', '):  # rozdzielanie gatunkow po przecinku
                     self._update_dictionary(dictionary, element)
 
-        genre_counts_df = pd.DataFrame.from_dict(data=dictionary, orient='index', columns=['counts'])  # zmiana typu z listy na dataframe
-        genre_counts = genre_counts_df['counts'].sort_values(ascending=False).head(5)  # sortowanie wartosci malejaco i wybranie 5
-        labels = genre_counts.index  # etykiety
-        values = genre_counts.values  # wartosci do wykresu
+        genre_counts_df = pd.DataFrame.from_dict(data=dictionary, orient='index', columns=['counts'])  # Zmiana typu z listy na dataframe
+        genre_counts = genre_counts_df['counts'].sort_values(ascending=False).head(5)  # Sortowanie wartosci malejaco i wybranie 5
+        labels = genre_counts.index  # Etykiety
+        values = genre_counts.values  # Wartosci do wykresu
         colors = ['#ffe0ee', '#ffc2db', '#ffa9c7', '#ff679d', '#ff0087']
         fig = go.Figure(data=[go.Pie(labels=labels, values=values, hole=.5, marker=dict(colors=colors))])
         fig.update_layout(title_text='Top 5 Popular Genres', title_font=dict(size=20, color='black', family='Arial', weight='bold'), title_x=0.5)
@@ -172,7 +170,8 @@ class NetflixAnalysis:
         # ) #zapisanie posortowanych danych do tabeli
         return table
 
-    def _update_dictionary(self, dictionary, genre):
+    @staticmethod
+    def _update_dictionary(dictionary, genre):
         if genre in dictionary:  # Jezeli gatunek jest juz zapisany w slowniczku dodajemy licznik +1, w przeciwnym przypadku zapisujemy w slowniku i ustawiamy licznik na 1
             dictionary[genre] = dictionary[genre] + 1
         else:
