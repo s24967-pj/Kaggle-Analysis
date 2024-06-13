@@ -9,7 +9,7 @@ import plotly.graph_objs as go
 from dash import callback, dcc, html
 from dash.dependencies import Input, Output
 
-from src.utils.utils import PROJECT_DIR
+from utils.utils import PROJECT_DIR
 
 
 class NetflixAnalysis:
