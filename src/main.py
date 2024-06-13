@@ -24,7 +24,7 @@ class NetflixAnalysis:
         self.app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
         self.setup_layout()
         self.setup_callbacks()
-    
+
     def setup_layout(self):
 
         # self.app.layout = dbc.Container([
@@ -36,7 +36,7 @@ class NetflixAnalysis:
         #     self.table_top_reviewed()],   
         # )
         # add some padding.
-        
+
 
         self.app.layout = dbc.Container([
                 dbc.Row(
@@ -84,7 +84,7 @@ class NetflixAnalysis:
         @callback(
             Output("output", "children"),
             Input("input1", "value"),
-        )  
+        )
         def update_output(input1):
             data = self.netflix_df.drop_duplicates('title', keep='first')[["title", "stars"]]
             data2 = data[data['stars'].str.contains(input1)]
@@ -106,7 +106,7 @@ class NetflixAnalysis:
     #         return f"Actor found: {input}", ''
     #     else:
     #         return "Actor not found", ''
-        
+
 
 
     # def searching_actor(self):
@@ -114,11 +114,11 @@ class NetflixAnalysis:
     #         return f"Actor found: {self.update_output.input1}"
     #     else:
     #         return "Actor not found"
-       
-        
+
+
 
     def plot_top_reviewed_movies(self):
-        #Wykres najlepiej ocenianych filmow
+        """Funkcja zwracajaca wykres najlepiej ocenianych filmow."""
         top_reviewed = self.netflix_df.drop_duplicates('title', keep='first').nlargest(10, "rating")[["title", "rating"]] #wybor 10 filmow z najwieksza wartoscia w 'rating' zapisujac 1 wynik, aby nie bylo powtorek
         colors = ['#ff0087']
         fig = px.bar(top_reviewed, x='rating', y='title', orientation='h',  color_discrete_sequence=colors)
@@ -126,10 +126,10 @@ class NetflixAnalysis:
         return fig
 
     def plot_top_genres_movies(self):
-       #Wykres najczesciej wystepowanych gatunkow
+        """"Funkcja zwracajaca wykres najczesciej wystepujacych gatunkow filmow."""
         dictionary = {} #stworzenie slownika
 
-        for genre in self.netflix_df["genre"]: #przzechodzimy przez cala koumne genre        
+        for genre in self.netflix_df["genre"]: #przzechodzimy przez cala koumne genre
             if type(genre) is not str: #rozwiaznie problemu zle wprowadzonych danych w jednym z filmow
                 continue
             if ',' not in genre: #jezeli w 'genre' nie ma kilku gatunkow przypisanych do jednego filmu
@@ -137,7 +137,7 @@ class NetflixAnalysis:
             else: #jezeli mamy przypisane wiecej niz jeden gatunek do filmu
                 for element in genre.split(', '): #rozdzielanie gatunkow po przecinku
                     self._update_dictionary(dictionary, element)
-                          
+
         genre_counts_df = pd.DataFrame.from_dict(data=dictionary, orient='index', columns=['counts']) #zmiana typu z listy na dataframe
         genre_counts = genre_counts_df['counts'].sort_values(ascending=False).head(5) #sortowanie wartosci malejaco i wybranie 5
         labels = genre_counts.index #etykiety
@@ -148,16 +148,15 @@ class NetflixAnalysis:
         return fig
 
     def table_top_reviewed(self):
-       
         #review_sort = self.netflix_df.drop_duplicates('title', keep='first').sort_values('rating', ascending=False)[["title", "rating"]] #sortowanie danych z ratings
-      
+
         review_sort = self.netflix_df.drop_duplicates('title', keep='first')[["title", "rating"]]
         columnDefs = [
             {'field': 'title', 'sortable': False},
             {'field': 'rating'}
             # {"name": "Rating", "id": "rating", "type": "numeric"}
         ]
-        
+
         table = html.Div(
             [
                 dag.AgGrid(
@@ -200,29 +199,27 @@ class NetflixAnalysis:
         # ) #zapisanie posortowanych danych do tabeli
         return table
 
-
     def _update_dictionary(self, dictionary, genre):
-        if genre in dictionary: #jezeli gatunek jest juz zapisany w slowniczku dodajemy licznik +1, w przeciwnym przypadku zapisujemy w slowniku i ustawiamy licznik na 1
+        if genre in dictionary: # Jezeli gatunek jest juz zapisany w slowniczku dodajemy licznik +1, w przeciwnym przypadku zapisujemy w slowniku i ustawiamy licznik na 1
             dictionary[genre] = dictionary[genre] + 1
         else:
             dictionary[genre] = 1
 
     @staticmethod
-    #Zaladowanie datasetu
+    # Załadowanie datasetu
     def _load_data():
         file_path = os.path.join(PROJECT_DIR, "src", "data", "n_movies.csv")
         return pd.read_csv(file_path)
-    
+
     def run_server(self):
         # Uruchomienie serwera Dash
         self.app.run_server(debug=True)
 
 
-
 if __name__ == "__main__":
     analysis = NetflixAnalysis()
     analysis.run_server()
-    
+
 
 
 
