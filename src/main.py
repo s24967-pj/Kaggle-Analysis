@@ -21,72 +21,43 @@ class NetflixAnalysis:
         self.setup_layout()
         self.setup_callbacks()
 
+    def run_server(self):
+        """Uruchomienie serwera Dash."""
+        self.app.run_server(debug=True)
+
     def setup_layout(self):
+        """Ustawienie layoutu aplikacji."""
+        self.app.layout = dbc.Container([self.create_header(), self.create_top_reviewed_section(), self.create_top_genres_section(),
+                                         self.create_input_section()])
 
-        # self.app.layout = dbc.Container([
-        #     html.Div([
-        #     html.H1("Netflix Data Visualisation"), 
-        #     dcc.Graph(id='top-reviewed-movies', figure=self.plot_top_reviewed_movies()),
-        #     dcc.Graph(id='top-genres-movies', figure=self.plot_top_genres_movies())             
-        #     ]), 
-        #     self.table_top_reviewed()],   
-        # )
-        # add some padding.
-
-        self.app.layout = dbc.Container([dbc.Row(dbc.Col([html.H1("Netflix Data Visualisation", style={
+    @staticmethod
+    def create_header():
+        return dbc.Row(dbc.Col(html.H1("Netflix Data Visualisation", style={
             'fontSize': 60,
             'textAlign': 'center',
             'color': '#800080',
             'padding-bottom': '5rem'
-        }, )], width={
+        }), width={
             'size': 6,
             'offset': 3
-        }, ), ), dbc.Row([dbc.Col(dcc.Graph(id='top-reviewed-movies', figure=self.plot_top_reviewed_movies())),
-                          dbc.Col([self.table_top_reviewed()], width={
-                              'size': 4,
-                              'order': 2
-                          }, )]), dbc.Row(dbc.Col(dcc.Graph(id='top-genres-movies', figure=self.plot_top_genres_movies()))),
-                                         dbc.Row([dbc.Col([dcc.Input(id='input1', type='text', debounce=True, value=""), html.Div(id='output')])  # [
-                                                  #     html.P('Enter actor name'),
-                                                  #     dcc.Input(id='num', type='text', debounce=True),
-                                                  #     html.P(id='err', style={'color': 'red'}),
-                                                  #     html.P(id='out')
-                                                  # ]
-                                                  #     )
-                                                  # )
-                                                  ])])
+        }))
 
-    def setup_callbacks(self):
+    def create_top_reviewed_section(self):
+        """Funkcja zwracajaca sekcje z wykresem najlepiej ocenianych filmow."""
+        return dbc.Row([dbc.Col(dcc.Graph(id='top-reviewed-movies', figure=self.plot_top_reviewed_movies())),
+                        dbc.Col(self.table_top_reviewed(), width={
+                            'size': 4,
+                            'order': 2
+                        })])
 
-        @callback(Output("output", "children"), Input("input1", "value"), )
-        def update_output(input1):
-            data = self.netflix_df.drop_duplicates('title', keep='first')[["title", "stars"]]
-            data2 = data[data['stars'].str.contains(input1)]
-            print(data2)
-            title = data2['title']
-            return f'Films: {title.values}'
+    def create_top_genres_section(self):
+        """Funkcja zwracajaca sekcje z wykresem najczesciej wystepujacych gatunkow filmow."""
+        return dbc.Row(dbc.Col(dcc.Graph(id='top-genres-movies', figure=self.plot_top_genres_movies())))
 
-    # @callback(
-    #     Output('out', 'children'),
-    #     Output('err', 'children'),
-    #     Input('num', 'value')
-    # )  
-    # def update_output(self):
-    #     # return f'Actor: {input1}'
-    #     # return self.searching_actor(input1)
-    #     if self.netflix_df["stars"] is None:
-    #         return '', ''
-
-    #     if input in self.netflix_df["stars"].values:
-    #         return f"Actor found: {input}", ''
-    #     else:
-    #         return "Actor not found", ''
-
-    # def searching_actor(self):
-    #     if self.update_output.input1 in self.netflix_df["stars"].values:
-    #         return f"Actor found: {self.update_output.input1}"
-    #     else:
-    #         return "Actor not found"
+    @staticmethod
+    def create_input_section():
+        """Funkcja zwracajaca input do wprowadzania danych."""
+        return dbc.Row(dbc.Col([dcc.Input(id='input1', type='text', debounce=True, value=""), html.Div(id='output')]))
 
     def plot_top_reviewed_movies(self):
         """Funkcja zwracajaca wykres najlepiej ocenianych filmow."""
@@ -124,6 +95,7 @@ class NetflixAnalysis:
         return fig
 
     def table_top_reviewed(self):
+        """Funkcja zwracajaca tabelę z najlepiej ocenianymi filmami."""
         # review_sort = self.netflix_df.drop_duplicates('title', keep='first').sort_values('rating', ascending=False)[["title", "rating"]] #sortowanie danych z ratings
 
         review_sort = self.netflix_df.drop_duplicates('title', keep='first')[["title", "rating"]]
@@ -170,22 +142,30 @@ class NetflixAnalysis:
         # ) #zapisanie posortowanych danych do tabeli
         return table
 
+    def setup_callbacks(self):
+        """Ustawienie callbacków."""
+
+        @callback(Output("output", "children"), Input("input1", "value"))
+        def update_output(input1):
+            data = self.netflix_df.drop_duplicates('title', keep='first')[["title", "stars"]]
+            data2 = data[data['stars'].str.contains(input1)]
+            print(data2)
+            title = data2['title']
+            return f'Films: {title.values}'
+
     @staticmethod
     def _update_dictionary(dictionary, genre):
+        """Funkcja pomocnicza do tworzenia slownika z gatunkami filmow."""
         if genre in dictionary:  # Jezeli gatunek jest juz zapisany w slowniczku dodajemy licznik +1, w przeciwnym przypadku zapisujemy w slowniku i ustawiamy licznik na 1
             dictionary[genre] = dictionary[genre] + 1
         else:
             dictionary[genre] = 1
 
     @staticmethod
-    # Załadowanie datasetu
     def _load_data():
+        """Funkcja wczytujaca dane."""
         file_path = os.path.join(PROJECT_DIR, "src", "data", "n_movies.csv")
         return pd.read_csv(file_path)
-
-    def run_server(self):
-        # Uruchomienie serwera Dash
-        self.app.run_server(debug=True)
 
 
 if __name__ == "__main__":
