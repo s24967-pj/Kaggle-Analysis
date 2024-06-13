@@ -18,7 +18,7 @@ from src.utils.utils import PROJECT_DIR
 
 
 class NetflixAnalysis:
-    #Analiza Netflix dataset ladowanie danych i init dash app
+    """Analiza Netflix dataset ładowanie danych i init dash app."""
     def __init__(self):
         self.netflix_df = self._load_data()
         self.app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
@@ -89,7 +89,8 @@ class NetflixAnalysis:
             data = self.netflix_df.drop_duplicates('title', keep='first')[["title", "stars"]]
             data2 = data[data['stars'].str.contains(input1)]
             print(data2)
-            return f'Films: {data2['title'].values}'
+            title = data2['title']
+            return f'Films: {title.values}'
     # @callback(
     #     Output('out', 'children'),
     #     Output('err', 'children'),
