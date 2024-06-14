@@ -5,7 +5,7 @@ import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objs as go
-from dash import callback, dcc, html, ctx
+from dash import callback, dcc, html
 from dash.dependencies import Input, Output
 
 from utils.utils import PROJECT_DIR
