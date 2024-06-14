@@ -40,7 +40,7 @@ class NetflixAnalysis:
         return dbc.Row(dbc.Col(html.H1("Netflix Data Visualisation", style={
             'fontSize': 50,
             'textAlign': 'center',
-            'color': '#89CFF0',
+            'color': 'black',
             'padding-bottom': '5rem',
             'padding-top': '3rem'
         }), width={
@@ -107,7 +107,7 @@ class NetflixAnalysis:
         fig.update_layout(xaxis_title='Rating',
                           yaxis_title='Movie Title',
                           title="Top 10 Best Reviewed Movies",
-                          title_font=dict(size=20, color='black', family='Arial', weight='bold'),
+                          title_font=dict(size=20, color='#89CFF0', family='Arial', weight='bold'),
                           title_x=0.5)
         return fig
 
@@ -120,7 +120,7 @@ class NetflixAnalysis:
         values = genre_counts  # Wartosci do wykresu
         colors = ['#ffe0ee', '#ffc2db', '#ffa9c7', '#ff679d', '#ff0087']
         fig = go.Figure(data=[go.Pie(labels=labels, values=values, hole=.5, marker=dict(colors=colors))])
-        fig.update_layout(title_text='Top 5 Popular Genres', title_font=dict(size=20, color='black', family='Arial', weight='bold'), title_x=0.5)     
+        fig.update_layout(title_text='Top 5 Popular Genres', title_font=dict(size=20, color='#89CFF0', family='Arial', weight='bold'), title_x=0.5)     
         return fig
 
     def table_top_reviewed(self):
