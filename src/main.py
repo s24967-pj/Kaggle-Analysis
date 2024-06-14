@@ -5,7 +5,7 @@ import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objs as go
-from dash import callback, dcc, html
+from dash import callback, dcc, html, ctx
 from dash.dependencies import Input, Output
 
 from utils.utils import PROJECT_DIR
@@ -38,10 +38,11 @@ class NetflixAnalysis:
     @staticmethod
     def create_header():
         return dbc.Row(dbc.Col(html.H1("Netflix Data Visualisation", style={
-            'fontSize': 60,
+            'fontSize': 50,
             'textAlign': 'center',
-            'color': '#800080',
-            'padding-bottom': '5rem'
+            'color': '#89CFF0',
+            'padding-bottom': '5rem',
+            'padding-top': '3rem'
         }), width={
             'size': 6,
             'offset': 3
@@ -57,8 +58,25 @@ class NetflixAnalysis:
 
     def create_top_genres_section(self):
         """Funkcja zwracajaca sekcje z wykresem najczesciej wystepujacych gatunkow filmow."""
-        return dbc.Row(dbc.Col(dcc.Graph(id='top-genres-movies', figure=self.plot_top_genres_movies())))
+        return dbc.Row([
+        dbc.Col([
+            dbc.Button('Change values', outline=True, color="info", className="me-1", id='btn-nclicks-1', n_clicks=1)
+            # html.Div(id='plot-top-genres')
+        ], width={
+            'size': 1,
+            'offset': 2
+        }, style={'padding-top': 200}),
+        # dbc.Col(dcc.Graph(id='plot-top-genres', figure=self.plot_top_genres_movies()),
+        #     width={
+        #     'size': 6
+        # })
+        dbc.Col(html.Div(id='plot-top-genres', children=dcc.Graph(figure=self.plot_top_genres_movies())),
+            width={
+            'size': 6
+        })
+    ])
 
+    
     def create_actor_movie_table_section(self):
         """Funkcja zwracajaca sekcje z tabela aktorow i filmow."""
         return dbc.Row([dbc.Col([dcc.Input(id='actor-input', type='text', placeholder='Enter actor name', debounce=True),
@@ -102,7 +120,7 @@ class NetflixAnalysis:
         values = genre_counts  # Wartosci do wykresu
         colors = ['#ffe0ee', '#ffc2db', '#ffa9c7', '#ff679d', '#ff0087']
         fig = go.Figure(data=[go.Pie(labels=labels, values=values, hole=.5, marker=dict(colors=colors))])
-        fig.update_layout(title_text='Top 5 Popular Genres', title_font=dict(size=20, color='black', family='Arial', weight='bold'), title_x=0.5)
+        fig.update_layout(title_text='Top 5 Popular Genres', title_font=dict(size=20, color='black', family='Arial', weight='bold'), title_x=0.5)     
         return fig
 
     def table_top_reviewed(self):
@@ -121,10 +139,18 @@ class NetflixAnalysis:
             "animateRows": False
         })])
         return table
+    
+    def hover(self):
+        fig = fig.update_traces(hoverinfo='label+percent', textinfo='value')
+        
+
 
     def setup_callbacks(self):
-        """Ustawienie callbacków."""
-        @callback(Output("actor-movie-table", "children"), Input("actor-input", "value"))
+        """ustawienie callbackow"""
+        @callback(
+            Output("actor-movie-table", "children"),
+            Input("actor-input", "value")
+        )
         def update_actor_movie_table(actor_name):
             data = self.netflix_df[["title", "stars"]]
             if actor_name:
@@ -145,8 +171,21 @@ class NetflixAnalysis:
             }, columnSize="sizeToFit", dashGridOptions={
                 "animateRows": False
             })
-            return table
 
+            return table
+        
+        @callback(
+            Output('plot-top-genres', 'children'),
+            Input('btn-nclicks-1', 'n_clicks')
+        )
+        def update_pie_chart(n_clicks):
+            fig = self.plot_top_genres_movies()
+            if n_clicks % 2 == 0:
+                return dcc.Graph(figure=fig.update_traces(hoverinfo='label+percent', textinfo='value'))
+            else:
+                return dcc.Graph(figure=fig)
+            
+    
     @staticmethod
     def _update_dictionary(dictionary, genre):
         """Funkcja pomocnicza do tworzenia slownika z gatunkami filmow."""
